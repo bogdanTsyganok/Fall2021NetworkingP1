@@ -1,3 +1,13 @@
+/*
+* Author:		Jarrid Steeper 0883583, Bogdan Tsyganok 0886354
+* Class:		INFO6016 Network Programming
+* Teacher:		Lukas Gustafson
+* Project:		Project01
+* Due Date:		Oct 22
+* Filename:		main.cpp
+* Purpose:		Contans the main function for the client
+*/
+
 #define WIN32_LEAN_AND_MEAN
 
 #include <windows.h>
