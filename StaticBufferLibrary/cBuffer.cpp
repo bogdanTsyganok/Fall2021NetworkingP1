@@ -110,7 +110,7 @@ std::string cBuffer::ReadStringBE(std::size_t index, int32_t stringSize)
 	std::string outPut;
 	for (int i = 0; i < stringSize; i++)
 	{
-		value |= mBuffer[index++];
+		value = mBuffer[index++];
 		outPut += value;
 	}
 
