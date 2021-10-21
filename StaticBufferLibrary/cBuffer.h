@@ -25,6 +25,9 @@ public:
 	cBuffer(std::size_t size);
 
 	//Methods
+	uint8_t* GetBuffer();
+
+	size_t GetSize();
 
 	//Ints size = 32
 	void WriteIntBE(std::size_t index, int32_t value);

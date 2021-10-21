@@ -105,18 +105,22 @@ int main(int argc, char **argv)
 		std::future<std::string> future = std::async(getAnswer);
 		if (future.wait_for(timeout) == std::future_status::ready)
 			answer = future.get();
+		cBuffer buffer(DEFAULT_BUFLEN);
+		buffer.WriteStringBE(answer);
 
-		if(!(answer.empty()))
-		// Step #4 Send the message to the server
-		result = send(connectSocket, answer.c_str(), (int)strlen(answer.c_str()), 0);
-		if (result == SOCKET_ERROR)
+		if (!(answer.empty()))
 		{
-			printf("send failed with error: %d\n", WSAGetLastError());
-			closesocket(connectSocket);
-			WSACleanup();
-			return 1;
+			// Step #4 Send the message to the server
+			result = send(connectSocket, (char*)buffer.GetBuffer(), buffer.GetSize(), 0);
+			if (result == SOCKET_ERROR)
+			{
+				printf("send failed with error: %d\n", WSAGetLastError());
+				closesocket(connectSocket);
+				WSACleanup();
+				return 1;
+			}
+			printf("Bytes Sent: %ld\n", result);
 		}
-		printf("Bytes Sent: %ld\n", result);
 	}
 
 	// Step #5 shutdown the connection since no more data will be sent

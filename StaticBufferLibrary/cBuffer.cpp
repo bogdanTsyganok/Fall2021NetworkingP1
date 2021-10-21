@@ -5,6 +5,16 @@ cBuffer::cBuffer(std::size_t size)
 	mBuffer.resize(size);
 }
 
+uint8_t* cBuffer::GetBuffer()
+{
+	return mBuffer.data();
+}
+
+size_t cBuffer::GetSize()
+{
+	return mBuffer.size();
+}
+
 //Ints
 void cBuffer::WriteIntBE(std::size_t index, int32_t value)
 {
