@@ -6,10 +6,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
-#include <future>
-#include <thread>
-#include <chrono>
 #include <cBuffer.h>
+#include <conio.h>
 
 // Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
 #pragma comment (lib, "Ws2_32.lib")
@@ -19,13 +17,6 @@
 #define DEFAULT_BUFLEN 512						// Default buffer length of our buffer in characters
 #define DEFAULT_PORT "27015"					// The default port to use
 #define SERVER "127.0.0.1"						// The IP of our server
-
-static std::string getAnswer()
-{
-	std::string answer;
-	std::getline(std::cin, answer);
-	return answer;
-}
 
 int main(int argc, char **argv)
 {
@@ -79,6 +70,8 @@ int main(int argc, char **argv)
 
 		// Connect to server.
 		result = connect(connectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
+		DWORD NonBlock = 1;
+		result = ioctlsocket(connectSocket, FIONBIO, &NonBlock);
 		if (result == SOCKET_ERROR)
 		{
 			closesocket(connectSocket);
@@ -97,19 +90,38 @@ int main(int argc, char **argv)
 		return 1;
 	}
 	bool acceptInput = true;
+	bool sendMsg = false;
+	std::string msg;
 	while(acceptInput)
 	{
-		std::chrono::seconds timeout(50000);
-		std::cout << "Accepting Input" << std::endl << std::flush;
-		std::string answer = ""; //default to ""
-		std::future<std::string> future = std::async(getAnswer);
-		if (future.wait_for(timeout) == std::future_status::ready)
-			answer = future.get();
-		cBuffer buffer(DEFAULT_BUFLEN);
-		buffer.WriteStringBE(answer);
-
-		if (!(answer.empty()))
+		if (_kbhit())
 		{
+			char key = _getch();
+
+
+			if (key == 27)
+			{
+				acceptInput = false;
+			}
+			else
+			if (key == '\r')
+			{
+				sendMsg = true;
+			}
+			else
+			{
+				msg += key;
+			}
+
+			std::cout << key;
+		}
+
+		if (sendMsg)
+		{
+			cBuffer buffer(DEFAULT_BUFLEN);
+			buffer.WriteStringBE(msg);
+
+
 			// Step #4 Send the message to the server
 			result = send(connectSocket, (char*)buffer.GetBuffer(), buffer.GetSize(), 0);
 			if (result == SOCKET_ERROR)
@@ -120,6 +132,23 @@ int main(int argc, char **argv)
 				return 1;
 			}
 			printf("Bytes Sent: %ld\n", result);
+			sendMsg = false;
+		}
+
+		// Step #6 Receive until the peer closes the connection
+		result = recv(connectSocket, recvbuf, recvbuflen, 0);
+		if (result > 0)
+		{
+			printf("Bytes received: %d\n", result);
+			printf("Message: %s\n", &recvbuf);
+		}
+		else if (result == 0)
+		{
+			printf("Connection closed\n");
+		}
+		else if (WSAGetLastError() != WSAEWOULDBLOCK)
+		{
+			printf("recv failed with error: %d\n", WSAGetLastError());
 		}
 	}
 
@@ -133,25 +162,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	// Step #6 Receive until the peer closes the connection
-	do {
-
-		result = recv(connectSocket, recvbuf, recvbuflen, 0);
-		if (result > 0)
-		{
-			printf("Bytes received: %d\n", result);
-			printf("Message: %s\n", &recvbuf);
-		}
-		else if (result == 0)
-		{
-			printf("Connection closed\n");
-		}
-		else
-		{
-			printf("recv failed with error: %d\n", WSAGetLastError());
-		}
-
-	} while (result > 0);
+	
 
 	// Step #7 cleanup
 	closesocket(connectSocket);
