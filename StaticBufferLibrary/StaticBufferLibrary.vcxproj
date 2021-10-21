@@ -140,10 +140,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="cBuffer.h" />
-    <ClInclude Include="cIntBuffer.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="cIntBuffer.cpp" />
+    <ClCompile Include="cBuffer.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
