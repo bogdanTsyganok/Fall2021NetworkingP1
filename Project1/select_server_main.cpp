@@ -21,7 +21,7 @@ struct ClientInfo {
 
 	// Buffer information (this is basically you buffer class)
 	WSABUF dataBuf;
-	char buffer[DEFAULT_BUFLEN];
+	cBuffer buffer = cBuffer(DEFAULT_BUFLEN);
 	int bytesRECV;
 };
 
@@ -237,7 +237,7 @@ int main(int argc, char** argv)
 			if (FD_ISSET(client->socket, &ReadSet))
 			{
 				total--;
-				client->dataBuf.buf = client->buffer;
+				client->dataBuf.buf = (char *)client->buffer.GetBuffer();
 				client->dataBuf.len = DEFAULT_BUFLEN;
 
 				DWORD Flags = 0;
@@ -253,17 +253,8 @@ int main(int argc, char** argv)
 
 
 
-				std::string received(client->dataBuf.buf);
-				// buffer.WriteString(received);
-				// packetLength = buffer.ReadUInt32LE();
+				std::string received = client->buffer.ReadStringBE(4);
 
-				int value = 0;
-				value |= client->dataBuf.buf[0] << 24;
-				value |= client->dataBuf.buf[1] << 16;
-				value |= client->dataBuf.buf[2] << 8;
-				value |= client->dataBuf.buf[3];
-
-				printf("The value received is: %d\n", value);
 
 				std::cout << "RECVd: " << received << std::endl;
 
