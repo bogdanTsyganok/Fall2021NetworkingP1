@@ -21,6 +21,11 @@
   <ItemGroup>
     <ClCompile Include="client_main.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\StaticBufferLibrary\StaticBufferLibrary.vcxproj">
+      <Project>{918827ba-729c-4aca-bd58-1656a970fda8}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
