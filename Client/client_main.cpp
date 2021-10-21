@@ -5,6 +5,10 @@
 #include <ws2tcpip.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <iostream>
+#include <future>
+#include <thread>
+#include <chrono>
 
 // Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
 #pragma comment (lib, "Ws2_32.lib")
@@ -15,6 +19,13 @@
 #define DEFAULT_PORT "27015"					// The default port to use
 #define SERVER "127.0.0.1"						// The IP of our server
 
+static std::string getAnswer()
+{
+	std::string answer;
+	std::getline(std::cin, answer);
+	return answer;
+}
+
 int main(int argc, char **argv)
 {
 	WSADATA wsaData;							// holds Winsock data
@@ -24,7 +35,7 @@ int main(int argc, char **argv)
 	struct addrinfo *ptr = NULL;
 	struct addrinfo hints;
 
-	const char *sendbuf = "Hello World!";		// The messsage to send to the server
+	//const char *sendbuf = "Hello World!";		// The messsage to send to the server
 
 	char recvbuf[DEFAULT_BUFLEN];				// The maximum buffer size of a message to send
 	int result;									// code of the result of any command we use
@@ -84,17 +95,28 @@ int main(int argc, char **argv)
 		WSACleanup();
 		return 1;
 	}
-
-	// Step #4 Send the message to the server
-	result = send(connectSocket, sendbuf, (int)strlen(sendbuf), 0);
-	if (result == SOCKET_ERROR)
+	bool acceptInput = true;
+	while(acceptInput)
 	{
-		printf("send failed with error: %d\n", WSAGetLastError());
-		closesocket(connectSocket);
-		WSACleanup();
-		return 1;
+		std::chrono::seconds timeout(50000);
+		std::cout << "Accepting Input" << std::endl << std::flush;
+		std::string answer = ""; //default to ""
+		std::future<std::string> future = std::async(getAnswer);
+		if (future.wait_for(timeout) == std::future_status::ready)
+			answer = future.get();
+
+		if(!(answer.empty()))
+		// Step #4 Send the message to the server
+		result = send(connectSocket, answer.c_str(), (int)strlen(answer.c_str()), 0);
+		if (result == SOCKET_ERROR)
+		{
+			printf("send failed with error: %d\n", WSAGetLastError());
+			closesocket(connectSocket);
+			WSACleanup();
+			return 1;
+		}
+		printf("Bytes Sent: %ld\n", result);
 	}
-	printf("Bytes Sent: %ld\n", result);
 
 	// Step #5 shutdown the connection since no more data will be sent
 	result = shutdown(connectSocket, SD_SEND);
