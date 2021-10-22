@@ -24,17 +24,8 @@ void cBuffer::AddHeader(int commandId)
 	//Ints size = 32
 
 	//Size
-	int packetSize = 8;
+	int packetSize = 8 + GetWriteIndex();
 	
-	for (uint8_t byte : mBuffer)
-	{
-		packetSize++;
-		if (byte == '\0')
-		{
-			return;
-		}
-	}
-
 	header->push_back(packetSize >> 24);
 	header->push_back(packetSize >> 16);
 	header->push_back(packetSize >> 8);
@@ -59,6 +50,16 @@ size_t cBuffer::GetSize()
 	return mBuffer.size();
 }
 
+int cBuffer::GetWriteIndex()
+{
+	return mWriteIndex;
+}
+
+int cBuffer::GetReadIndex()
+{
+	return mReadIndex;
+}
+
 void cBuffer::ResetSize(size_t newSize)
 {
 	mBuffer.resize(newSize);
@@ -78,6 +79,7 @@ void cBuffer::WriteIntBE(std::size_t index, int32_t value)
 	mBuffer[index + 1] = value >> 16;
 	mBuffer[index + 2] = value >> 8;
 	mBuffer[index + 3] = value;
+	mWriteIndex += 4;
 }
 
 void cBuffer::WriteIntBE(int32_t value)
@@ -115,6 +117,7 @@ void cBuffer::WriteShortBE(std::size_t index, int16_t value)
 {
 	mBuffer[index] = value >> 8;
 	mBuffer[index + 1] = value;
+	mWriteIndex += 2;
 }
 
 void cBuffer::WriteShortBE(int16_t value)
@@ -146,8 +149,8 @@ void cBuffer::WriteStringBE(std::size_t index, std::string value)
 {
 	for (char c : value)
 	{
-		mBuffer[index] = c;
-		index++;
+		mBuffer[index++] = c;
+		mWriteIndex++;
 	}
 }
 
@@ -155,8 +158,7 @@ void cBuffer::WriteStringBE(std::string value)
 {
 	for (char c : value)
 	{
-		mBuffer[mWriteIndex] = c;
-		mWriteIndex++;
+		mBuffer[mWriteIndex++] = c;
 	}
 }
 

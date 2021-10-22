@@ -262,8 +262,19 @@ int main(int argc, char** argv)
 
 
 
-				std::string received = client->buffer.ReadStringBE(RecvBytes);
 
+
+				//Steps to revieve a packet
+				//1. Get the header out of the buffer
+				//Packet size
+				int packetSize = client->buffer.ReadIntBE();
+				//Command type
+				int commandtype = client->buffer.ReadIntBE();
+
+				//2. Get the message out of the buffer
+				short messageLength = client->buffer.ReadShortBE();
+
+				std::string received = client->buffer.ReadStringBE(messageLength);
 
 				std::cout << "RECVd: " << received << std::endl;
 

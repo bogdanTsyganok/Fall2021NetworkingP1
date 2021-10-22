@@ -24,13 +24,8 @@ public:
 	//Constructors and destructors
 	cBuffer(std::size_t size);
 
-	//Methods
 
-	/// <summary>
-	/// Will insert header with message length and command id at start of the buffer
-	/// </summary>
-	void AddHeader(int commandId);
-	
+	//Getters and Setters
 	/// <summary>
 	/// Returns pointer to the buffers storage
 	/// </summary>
@@ -42,6 +37,25 @@ public:
 	/// </summary>
 	/// <returns></returns>
 	size_t GetSize();
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <returns></returns>
+	int GetWriteIndex();
+
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <returns></returns>
+	int GetReadIndex();
+
+	//Methods
+
+	/// <summary>
+	/// Will insert header with message length and command id at start of the buffer
+	/// </summary>
+	void AddHeader(int commandId);
 
 	/// <summary>
 	/// Resets the buffer size (vector size)

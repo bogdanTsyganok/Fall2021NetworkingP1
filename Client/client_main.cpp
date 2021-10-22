@@ -19,13 +19,15 @@
 #define SERVER "127.0.0.1"						// The IP of our server
 
 //Commands that will be in the header of packets
-enum Command
+enum class Command
 {
 	Connect = 1,
 	Join = 2,
 	Leave = 3,
 	Message = 4
 };
+
+void CreatePacket(cBuffer* buffer, Command type, std::string message);
 
 int main(int argc, char **argv)
 {
@@ -127,20 +129,38 @@ int main(int argc, char **argv)
 
 		if (sendMsg)
 		{
-			cBuffer buffer(DEFAULT_BUFLEN);
-			//Steps to send a packet
-			//1. Determine length of message and put in the buffer
-			buffer.WriteShortBE(msg.length());
+			cBuffer* buffer = new cBuffer(DEFAULT_BUFLEN);
 
-			//2. Put message in the buffer
-			buffer.WriteStringBE(msg);
+			if (msg.find("/connect") != std::string::npos)
+			{
+				CreatePacket(buffer, Command::Connect, msg);
+			}
+			else if (msg.find("/join") != std::string::npos)
+			{
+				CreatePacket(buffer, Command::Join, msg);
+			}
+			else if (msg.find("/leave") != std::string::npos)
+			{
+				CreatePacket(buffer, Command::Leave, msg);
+			}
+			else if (msg.find("/message") != std::string::npos)
+			{
+				CreatePacket(buffer, Command::Message, msg);
+			}
+			else
+			{
+				std::cout << "Invalid input please use input:" << std::endl;
+				std::cout << "/connect" << std::endl << "/join" << std::endl
+					<< "/leave" << std::endl << "/message" << std::endl;
+				msg = "";
+				sendMsg = false;
+				continue;
+			}
 
-			//3. Add header to the packet
-			buffer.AddHeader(Message);
-			//Packet is ready to be sent
+
 
 			// Step #4 Send the message to the server
-			result = send(connectSocket, (char*)buffer.GetBuffer(), buffer.GetSize(), 0);
+			result = send(connectSocket, (char*)buffer->GetBuffer(), buffer->GetSize(), 0);
 			if (result == SOCKET_ERROR)
 			{
 				printf("send failed with error: %d\n", WSAGetLastError());
@@ -188,4 +208,18 @@ int main(int argc, char **argv)
 	system("pause");
 
 	return 0;
+}
+
+void CreatePacket(cBuffer* buffer, Command type, std::string message)
+{
+	//Steps to send a packet
+	//1. Determine length of message and put in the buffer
+	buffer->WriteShortBE(message.length());
+
+	//2. Put message in the buffer
+	buffer->WriteStringBE(message);
+
+	//3. Add header to the packet
+	buffer->AddHeader((int)type);
+	//Packet is ready to be sent
 }
