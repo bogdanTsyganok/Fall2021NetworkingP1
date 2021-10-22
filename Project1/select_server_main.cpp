@@ -15,6 +15,15 @@
 #define DEFAULT_BUFLEN 512
 #define DEFAULT_PORT "27015"
 
+//Commands that will be in the header of packets
+enum Command
+{
+	Connect = 1,
+	Join = 2,
+	Leave = 3,
+	Message = 4
+};
+
 // Client structure
 struct ClientInfo {
 	SOCKET socket;

@@ -1,8 +1,52 @@
+/*
+* Author:		Jarrid Steeper 0883583, Bogdan Tsyganok 0886354
+* Class:		INFO6016 Network Programming
+* Teacher:		Lukas Gustafson
+* Project:		Project01
+* Due Date:		Oct 22
+* Filename:		cBuffer.cpp
+* Purpose:		Buffer between client and server, can serialize and deserialize ints, shorts and strings. Contains definitions
+*/
+
 #include "cBuffer.h"
+#include <iostream>
 
 cBuffer::cBuffer(std::size_t size)
 {
 	mBuffer.resize(size);
+}
+
+void cBuffer::AddHeader(int commandId)
+{
+	//Header will be 8 bytes (uint length, int commandId)
+	std::vector<uint8_t>* header = new std::vector<uint8_t>();
+
+	//Ints size = 32
+
+	//Size
+	int packetSize = 8;
+	
+	for (uint8_t byte : mBuffer)
+	{
+		packetSize++;
+		if (byte == '\0')
+		{
+			return;
+		}
+	}
+
+	header->push_back(packetSize >> 24);
+	header->push_back(packetSize >> 16);
+	header->push_back(packetSize >> 8);
+	header->push_back(packetSize);
+
+	//Command
+	header->push_back(commandId >> 24);
+	header->push_back(commandId >> 16);
+	header->push_back(commandId >> 8);
+	header->push_back(commandId);
+
+	mBuffer.insert(mBuffer.begin(), header->begin(), header->end());
 }
 
 uint8_t* cBuffer::GetBuffer()

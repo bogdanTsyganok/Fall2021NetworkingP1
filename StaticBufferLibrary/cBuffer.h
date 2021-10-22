@@ -5,7 +5,7 @@
 * Project:		Project01
 * Due Date:		Oct 22
 * Filename:		cBuffer.h
-* Purpose:
+* Purpose:		Buffer between client and server, can serialize and deserialize ints, shorts and strings. Contains declarations
 */
 
 #pragma once
@@ -25,6 +25,11 @@ public:
 	cBuffer(std::size_t size);
 
 	//Methods
+
+	/// <summary>
+	/// Will insert header with message length and command id at start of the buffer
+	/// </summary>
+	void AddHeader(int commandId);
 	
 	/// <summary>
 	/// Returns pointer to the buffers storage

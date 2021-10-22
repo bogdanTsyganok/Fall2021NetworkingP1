@@ -18,6 +18,15 @@
 #define DEFAULT_PORT "27015"					// The default port to use
 #define SERVER "127.0.0.1"						// The IP of our server
 
+//Commands that will be in the header of packets
+enum Command
+{
+	Connect = 1,
+	Join = 2,
+	Leave = 3,
+	Message = 4
+};
+
 int main(int argc, char **argv)
 {
 	WSADATA wsaData;							// holds Winsock data
@@ -119,8 +128,16 @@ int main(int argc, char **argv)
 		if (sendMsg)
 		{
 			cBuffer buffer(DEFAULT_BUFLEN);
+			//Steps to send a packet
+			//1. Determine length of message and put in the buffer
+			buffer.WriteShortBE(msg.length());
+
+			//2. Put message in the buffer
 			buffer.WriteStringBE(msg);
 
+			//3. Add header to the packet
+			buffer.AddHeader(Message);
+			//Packet is ready to be sent
 
 			// Step #4 Send the message to the server
 			result = send(connectSocket, (char*)buffer.GetBuffer(), buffer.GetSize(), 0);
