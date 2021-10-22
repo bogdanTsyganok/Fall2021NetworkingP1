@@ -253,7 +253,7 @@ int main(int argc, char** argv)
 
 
 
-				std::string received = client->buffer.ReadStringBE(4);
+				std::string received = client->buffer.ReadStringBE(RecvBytes);
 
 
 				std::cout << "RECVd: " << received << std::endl;
