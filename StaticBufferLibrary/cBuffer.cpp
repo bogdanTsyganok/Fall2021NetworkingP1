@@ -15,6 +15,18 @@ size_t cBuffer::GetSize()
 	return mBuffer.size();
 }
 
+void cBuffer::ResetSize(size_t newSize)
+{
+	mBuffer.resize(newSize);
+}
+
+void cBuffer::Flush()
+{
+	this->mBuffer.clear();
+	this->mReadIndex = 0;
+	this->mWriteIndex = 0;
+}
+
 //Ints
 void cBuffer::WriteIntBE(std::size_t index, int32_t value)
 {

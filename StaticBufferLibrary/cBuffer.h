@@ -25,9 +25,29 @@ public:
 	cBuffer(std::size_t size);
 
 	//Methods
+	
+	/// <summary>
+	/// Returns pointer to the buffers storage
+	/// </summary>
+	/// <returns></returns>
 	uint8_t* GetBuffer();
 
+	/// <summary>
+	/// Returns the size of the buffer (vector size)
+	/// </summary>
+	/// <returns></returns>
 	size_t GetSize();
+
+	/// <summary>
+	/// Resets the buffer size (vector size)
+	/// </summary>
+	/// <param name="newSize"></param>
+	void ResetSize(size_t newSize);
+
+	/// <summary>
+	/// Flushes the buffer clearing out the storage vector and setting both the read and write index to 0
+	/// </summary>
+	void Flush();
 
 	//Ints size = 32
 	void WriteIntBE(std::size_t index, int32_t value);
