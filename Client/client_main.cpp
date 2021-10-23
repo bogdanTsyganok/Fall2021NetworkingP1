@@ -263,7 +263,8 @@ int main(int argc, char **argv)
 			printf("Bytes Sent: %ld\n", result);
 			sendMsg = false;
 		}
-
+		recvbuf.Flush();
+		recvbuf.ResetSize(DEFAULT_BUFLEN);
 		// Step #6 Receive until the peer closes the connection
 		result = recv(connectSocket, (char*)recvbuf.GetBuffer(), recvbuflen, 0);
 		if (result > 0)
