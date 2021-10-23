@@ -40,7 +40,8 @@ int main(int argc, char **argv)
 
 	//const char *sendbuf = "Hello World!";		// The messsage to send to the server
 
-	char recvbuf[DEFAULT_BUFLEN];				// The maximum buffer size of a message to send
+	//char recvbuf[DEFAULT_BUFLEN];				// The maximum buffer size of a message to send
+	cBuffer recvbuf(DEFAULT_BUFLEN);
 	int result;									// code of the result of any command we use
 	int recvbuflen = DEFAULT_BUFLEN;			// The length of the buffer we receive from the server
 
@@ -178,11 +179,23 @@ int main(int argc, char **argv)
 		}
 
 		// Step #6 Receive until the peer closes the connection
-		result = recv(connectSocket, recvbuf, recvbuflen, 0);
+		result = recv(connectSocket, (char*)recvbuf.GetBuffer(), recvbuflen, 0);
 		if (result > 0)
 		{
+			//1. Get the header out of the buffer
+				//Packet size
+			int packetSize = recvbuf.ReadIntBE();
+			//Command type
+			int commandtype = recvbuf.ReadIntBE();
+
+			//2. Get the message out of the buffer
+			short messageLength = recvbuf.ReadShortBE();
+
+			std::string received = recvbuf.ReadStringBE(messageLength);
+
+
 			printf("Bytes received: %d\n", result);
-			printf("Message: %s\n", &recvbuf);
+			printf("Message: %s\n", received.c_str());
 		}
 		else if (result == 0)
 		{

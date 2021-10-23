@@ -172,7 +172,7 @@ int main(int argc, char** argv)
 	int total;
 	DWORD flags;
 	DWORD RecvBytes;
-	DWORD SentBytes;
+	DWORD SentBytes = 0;
 
 	printf("Entering accept/recv/send loop...\n");
 	while (true)
@@ -292,6 +292,7 @@ int main(int argc, char** argv)
 				}
 				else
 				{
+					//Here we'll be sending responses back to clients
 					printf("WSARecv() is OK!\n");
 					if (RecvBytes == 0)
 					{
@@ -304,33 +305,40 @@ int main(int argc, char** argv)
 					}
 					else
 					{
-						// RecvBytes > 0, we got data
-						iResult = WSASend(
-							client->socket,
-							&(client->dataBuf),
-							1,
-							&SentBytes,
-							Flags,
-							NULL,
-							NULL
-						);
+						for (int i = 0; i < TotalClients; i++)
+						{
+							if (ClientArray[i] != client)
+							{
+								// RecvBytes > 0, we got data
+								iResult = WSASend(
+									ClientArray[i]->socket,
+									&(client->dataBuf),
+									1,
+									&SentBytes,
+									Flags,
+									NULL,
+									NULL
+								);
+							}
+							if (SentBytes == SOCKET_ERROR)
+							{
+								printf("send error %d\n", WSAGetLastError());
+							}
+							else if (SentBytes == 0)
+							{
+								printf("Send result is 0\n");
+							}
+							else
+							{
+								printf("Successfully sent %d bytes!\n", SentBytes);
+							}
+						}
+						}
 
 						// Example using send instead of WSASend...
 						//int iSendResult = send(client->socket, client->dataBuf.buf, iResult, 0);
 
-						if (SentBytes == SOCKET_ERROR)
-						{
-							printf("send error %d\n", WSAGetLastError());
-						}
-						else if (SentBytes == 0)
-						{
-							printf("Send result is 0\n");
-						}
-						else
-						{
-							printf("Successfully sent %d bytes!\n", SentBytes);
-						}
-					}
+						
 				}
 			}
 		}
