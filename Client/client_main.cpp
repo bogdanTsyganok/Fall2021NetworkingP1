@@ -142,12 +142,12 @@ int main(int argc, char **argv)
 			{
 				sendMsg = true;
 			}
-			else if (key == '\b')
+			else if (key == '\b' && !msg.empty())
 			{
 				msg.erase(msg.end() - 1);
 				std::cout << "\b \b";
 			}
-			else
+			else if(true || (key <= 'z' && key >='a'))
 			{
 				msg += key;
 				std::cout << key;
@@ -172,7 +172,7 @@ int main(int argc, char **argv)
 				CreatePacket(buffer, Command::Name, messageVec);
 
 				messageVec.clear();
-				msg = "";
+				msg.clear();
 			}
 			//Join room
 			else if (msg.rfind("/join ", 0) == 0)
@@ -181,7 +181,7 @@ int main(int argc, char **argv)
 				messageVec.push_back(msg);
 				CreatePacket(buffer, Command::Join, messageVec);
 				messageVec.clear();
-				msg = "";
+				msg.clear();
 			}
 			//Leave room
 			else if (msg.rfind("/leave ", 0) == 0)
@@ -191,7 +191,7 @@ int main(int argc, char **argv)
 				messageVec.push_back(msg);
 				CreatePacket(buffer, Command::Leave, messageVec);
 				messageVec.clear();
-				msg = "";
+				msg.clear();
 			}
 			//Send message to a room
 			else if (msg.rfind("/message ", 0) == 0)
@@ -211,7 +211,7 @@ int main(int argc, char **argv)
 				messageVec.push_back(msg);
 				CreatePacket(buffer, Command::Message, messageVec);
 				messageVec.clear();
-				msg = "";
+				msg.clear();
 			}
 			//Display help
 			else if (msg.rfind("/help", 0) == 0)
@@ -222,7 +222,7 @@ int main(int argc, char **argv)
 					<< "/leave \"Room Name\" :\t\t\tLeave a room (no quotation marks)" << std::endl
 					<< "/message [Room Name] \"Message\" :\tSend a message to a room (Square brackets around room name required, quotations are not)" << std::endl
 					<< "/help :\t\t\t\t\tRe-display this help text" << std::endl;
-				msg = "";
+				msg.clear();
 				sendMsg = false;
 				continue;
 			}
@@ -236,7 +236,7 @@ int main(int argc, char **argv)
 				{
 					std::cout << room << std::endl;
 				}
-				msg = "";
+				msg.clear();
 				sendMsg = false;
 				continue;
 			}
@@ -246,7 +246,7 @@ int main(int argc, char **argv)
 				std::cout << "Invalid input please use input:" << std::endl;
 				std::cout << "/name" << std::endl << "/join" << std::endl
 					<< "/leave" << std::endl << "/message" << std::endl;
-				msg = "";
+				msg.clear();
 				sendMsg = false;
 				continue;
 			}

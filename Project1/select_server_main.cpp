@@ -26,6 +26,7 @@
 
 #define DEFAULT_BUFLEN 512
 #define DEFAULT_PORT "27015"
+#define DEFAULT_HEADERLEN 8
 
 //Commands that will be in the header of packets
 enum Command
@@ -44,13 +45,14 @@ struct ClientInfo {
 	WSABUF dataBuf;
 	cBuffer buffer = cBuffer(DEFAULT_BUFLEN);
 	int bytesRECV;
+	std::string name = "Anonymous";
 };
 
 int TotalClients = 0;
 ClientInfo* ClientArray[FD_SETSIZE];
 typedef std::multimap<std::string, int> roommap;
 typedef std::multimap<std::string, int>::iterator roommapiterator;
-std::multimap<std::string, int> rooms;
+roommap rooms;
 
 void RemoveClient(int index)
 {
@@ -291,22 +293,24 @@ int main(int argc, char** argv)
 				cBuffer response(DEFAULT_BUFLEN);
 				short messageLength;
 
+				//2. Get the message out of the buffer
 				switch (commandtype)
 				{
-				case 1:
+				case 1://setname
 				{
-
+					messageLength = client->buffer.ReadShortBE();
+					client->name = client->buffer.ReadStringBE(messageLength);
 					break;
 				}
 				case 2: //join
 				{
-					//2. Get the message out of the buffer
 					messageLength = client->buffer.ReadShortBE();
 					roomName = client->buffer.ReadStringBE(messageLength);
 					rooms.insert(std::make_pair(roomName, i));
 
 					std::string responseMessage = "Joined room: " + roomName;
 
+					response.ResetSize(responseMessage.length() + DEFAULT_HEADERLEN);
 					response.WriteShortBE(responseMessage.length());
 					response.WriteStringBE(responseMessage);
 
@@ -338,15 +342,15 @@ int main(int argc, char** argv)
 					break;
 				}
 				case 4: //message
+				{
 					messageLength = client->buffer.ReadShortBE();
-					roomName = client->buffer.ReadStringBE(messageLength); 
+					roomName = client->buffer.ReadStringBE(messageLength);
 					messageLength = client->buffer.ReadShortBE();
 					received = client->buffer.ReadStringBE(messageLength);
-					
-					//TODO: get user name
 
-					response.WriteShortBE(roomName.size());
-					response.WriteStringBE(roomName);
+
+					response.WriteShortBE(client->name.size());
+					response.WriteStringBE(client->name);
 
 					response.WriteShortBE(roomName.size());
 					response.WriteStringBE(roomName);
@@ -357,10 +361,12 @@ int main(int argc, char** argv)
 					response.AddHeader(commandtype);
 
 					break;
-
+				}
 				default:
 					break;
 				}
+
+				client->buffer.Flush();
 
 				//2. Get the message out of the buffer
 				/*short messageLength = client->buffer.ReadShortBE();
@@ -405,6 +411,9 @@ int main(int argc, char** argv)
 						roommapiterator it;
 						switch (commandtype)
 						{
+						case 1:
+							break;
+
 						case 2:	//Join
 							// RecvBytes > 0, we got data
 							iResult = WSASend(
@@ -434,9 +443,12 @@ int main(int argc, char** argv)
 
 							it = rooms.find(roomName);
 
-							if(it != rooms.end())
-								for (; it != rooms.end() && it->first != roomName; it++)
+							if (it != rooms.end())
+							{
+								while (it != rooms.end())
 								{
+									if (it->first != roomName)
+										break;
 									if (ClientArray[it->second] != client)
 									{
 										// RecvBytes > 0, we got data
@@ -450,7 +462,9 @@ int main(int argc, char** argv)
 											NULL
 										);
 									}
+									it++;
 								}
+							}
 							if (SentBytes == SOCKET_ERROR)
 							{
 								printf("send error %d\n", WSAGetLastError());
