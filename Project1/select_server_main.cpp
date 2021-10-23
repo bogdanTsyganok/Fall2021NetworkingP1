@@ -328,6 +328,9 @@ int main(int argc, char** argv)
 					response.WriteShortBE(roomName.size());
 					response.WriteStringBE(roomName);
 
+					response.WriteShortBE(roomName.size());
+					response.WriteStringBE(roomName);
+
 					response.WriteShortBE(received.size());
 					response.WriteStringBE(received);
 
