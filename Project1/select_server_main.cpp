@@ -273,17 +273,30 @@ int main(int argc, char** argv)
 
 				std::string received;
 				std::string roomName;
+
+
+				cBuffer response(DEFAULT_BUFLEN);
+
 				switch (commandtype)
 				{
 				case 2: //join
-
+				{
 					//2. Get the message out of the buffer
 					short messageLength = client->buffer.ReadShortBE();
 					roomName = client->buffer.ReadStringBE(messageLength);
 					rooms.insert(std::make_pair(roomName, i));
 
+					std::string responseMessage = "Joined room:" + roomName;
+
+					response.WriteShortBE(responseMessage.size());
+					response.WriteStringBE(responseMessage);
+
+					response.AddHeader(commandtype);
+
 					break;
+				}
 				case 3: //leave
+				{
 					short messageLength = client->buffer.ReadShortBE();
 					roomName = client->buffer.ReadStringBE(messageLength);
 
@@ -296,7 +309,15 @@ int main(int argc, char** argv)
 						}
 					}
 
+					std::string responseMessage = "Left room:" + roomName;
+
+					response.WriteShortBE(responseMessage.size());
+					response.WriteStringBE(responseMessage);
+
+					response.AddHeader(commandtype);
+
 					break;
+				}
 				case 4: //message
 					short messageLength = client->buffer.ReadShortBE();
 					roomName = client->buffer.ReadStringBE(messageLength); 
@@ -304,6 +325,13 @@ int main(int argc, char** argv)
 					received = client->buffer.ReadStringBE(messageLength);
 					
 
+					response.WriteShortBE(roomName.size());
+					response.WriteStringBE(roomName);
+
+					response.WriteShortBE(roomName.size());
+					response.WriteStringBE(roomName);
+
+					response.AddHeader(commandtype);
 
 					break;
 
@@ -317,6 +345,9 @@ int main(int argc, char** argv)
 				std::string received = client->buffer.ReadStringBE(messageLength);*/
 
 				//std::cout << "RECVd: " << received << std::endl;
+
+
+				
 
 				if (iResult == SOCKET_ERROR)
 				{
@@ -349,8 +380,30 @@ int main(int argc, char** argv)
 						switch (commandtype)
 						{
 						case 2:
+							// RecvBytes > 0, we got data
+							iResult = WSASend(
+								ClientArray[i]->socket,
+								&(client->dataBuf),
+								1,
+								&SentBytes,
+								Flags,
+								NULL,
+								NULL
+							);
 							break;
 						case 3:
+
+							// RecvBytes > 0, we got data
+							iResult = WSASend(
+								ClientArray[i]->socket,
+								&(client->dataBuf),
+								1,
+								&SentBytes,
+								Flags,
+								NULL,
+								NULL
+							);
+							break;
 							break;
 						case 4: //send message
 
