@@ -328,8 +328,8 @@ int main(int argc, char** argv)
 					response.WriteShortBE(roomName.size());
 					response.WriteStringBE(roomName);
 
-					response.WriteShortBE(roomName.size());
-					response.WriteStringBE(roomName);
+					response.WriteShortBE(received.size());
+					response.WriteStringBE(received);
 
 					response.AddHeader(commandtype);
 
@@ -347,7 +347,10 @@ int main(int argc, char** argv)
 				//std::cout << "RECVd: " << received << std::endl;
 
 
-				
+				WSABUF resBuf;
+
+				resBuf.buf = (char*)response.GetBuffer();
+				resBuf.len = response.GetSize();
 
 				if (iResult == SOCKET_ERROR)
 				{
@@ -383,7 +386,7 @@ int main(int argc, char** argv)
 							// RecvBytes > 0, we got data
 							iResult = WSASend(
 								ClientArray[i]->socket,
-								&(client->dataBuf),
+								&(resBuf),
 								1,
 								&SentBytes,
 								Flags,
@@ -396,7 +399,7 @@ int main(int argc, char** argv)
 							// RecvBytes > 0, we got data
 							iResult = WSASend(
 								ClientArray[i]->socket,
-								&(client->dataBuf),
+								&(resBuf),
 								1,
 								&SentBytes,
 								Flags,
@@ -417,7 +420,7 @@ int main(int argc, char** argv)
 										// RecvBytes > 0, we got data
 										iResult = WSASend(
 											ClientArray[it->second]->socket,
-											&(client->dataBuf),
+											&(resBuf),
 											1,
 											&SentBytes,
 											Flags,
