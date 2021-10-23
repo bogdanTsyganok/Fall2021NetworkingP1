@@ -8,6 +8,7 @@
 #include <string>
 #include <iostream>
 #include <cBuffer.h>
+#include <map>
 
 // Need to link with Ws2_32.lib
 #pragma comment (lib, "Ws2_32.lib")
@@ -36,6 +37,9 @@ struct ClientInfo {
 
 int TotalClients = 0;
 ClientInfo* ClientArray[FD_SETSIZE];
+typedef std::multimap<std::string, int> roommap;
+typedef std::multimap<std::string, int>::iterator roommapiterator;
+std::multimap<std::string, int> rooms;
 
 void RemoveClient(int index)
 {
@@ -260,10 +264,6 @@ int main(int argc, char** argv)
 					NULL
 				);
 
-
-
-
-
 				//Steps to revieve a packet
 				//1. Get the header out of the buffer
 				//Packet size
@@ -271,12 +271,52 @@ int main(int argc, char** argv)
 				//Command type
 				int commandtype = client->buffer.ReadIntBE();
 
+				std::string received;
+				std::string roomName;
+				switch (commandtype)
+				{
+				case 2: //join
+
+					//2. Get the message out of the buffer
+					short messageLength = client->buffer.ReadShortBE();
+					roomName = client->buffer.ReadStringBE(messageLength);
+					rooms.insert(std::make_pair(roomName, i));
+
+					break;
+				case 3: //leave
+					short messageLength = client->buffer.ReadShortBE();
+					roomName = client->buffer.ReadStringBE(messageLength);
+
+					for (roommapiterator it = rooms.begin(); it != rooms.end(); )
+					{
+						roommapiterator eraseIt = it++;
+						if (eraseIt->second == i && eraseIt->first == roomName)
+						{
+							rooms.erase(eraseIt);
+						}
+					}
+
+					break;
+				case 4: //message
+					short messageLength = client->buffer.ReadShortBE();
+					roomName = client->buffer.ReadStringBE(messageLength); 
+					messageLength = client->buffer.ReadShortBE();
+					received = client->buffer.ReadStringBE(messageLength);
+					
+
+
+					break;
+
+				default:
+					break;
+				}
+
 				//2. Get the message out of the buffer
-				short messageLength = client->buffer.ReadShortBE();
+				/*short messageLength = client->buffer.ReadShortBE();
 
-				std::string received = client->buffer.ReadStringBE(messageLength);
+				std::string received = client->buffer.ReadStringBE(messageLength);*/
 
-				std::cout << "RECVd: " << received << std::endl;
+				//std::cout << "RECVd: " << received << std::endl;
 
 				if (iResult == SOCKET_ERROR)
 				{
@@ -305,21 +345,34 @@ int main(int argc, char** argv)
 					}
 					else
 					{
-						for (int i = 0; i < TotalClients; i++)
+						roommapiterator it;
+						switch (commandtype)
 						{
-							if (ClientArray[i] != client)
-							{
-								// RecvBytes > 0, we got data
-								iResult = WSASend(
-									ClientArray[i]->socket,
-									&(client->dataBuf),
-									1,
-									&SentBytes,
-									Flags,
-									NULL,
-									NULL
-								);
-							}
+						case 2:
+							break;
+						case 3:
+							break;
+						case 4: //send message
+
+							it = rooms.find(roomName);
+
+							if(it != rooms.end())
+								for (; it != rooms.end() && it->first != roomName; it++)
+								{
+									if (ClientArray[it->second] != client)
+									{
+										// RecvBytes > 0, we got data
+										iResult = WSASend(
+											ClientArray[it->second]->socket,
+											&(client->dataBuf),
+											1,
+											&SentBytes,
+											Flags,
+											NULL,
+											NULL
+										);
+									}
+								}
 							if (SentBytes == SOCKET_ERROR)
 							{
 								printf("send error %d\n", WSAGetLastError());
@@ -332,8 +385,11 @@ int main(int argc, char** argv)
 							{
 								printf("Successfully sent %d bytes!\n", SentBytes);
 							}
+							break;
+						default:
+							break;
 						}
-						}
+					}
 
 						// Example using send instead of WSASend...
 						//int iSendResult = send(client->socket, client->dataBuf.buf, iResult, 0);
