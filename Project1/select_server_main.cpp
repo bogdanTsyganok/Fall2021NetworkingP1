@@ -19,7 +19,7 @@
 //Commands that will be in the header of packets
 enum Command
 {
-	Connect = 1,
+	Name = 1,
 	Join = 2,
 	Leave = 3,
 	Message = 4
@@ -244,6 +244,8 @@ int main(int argc, char** argv)
 		for (int i = 0; i < TotalClients; i++)
 		{
 			ClientInfo* client = ClientArray[i];
+			client->buffer.Flush();
+			client->buffer.ResetSize(DEFAULT_BUFLEN);
 
 			// If the ReadSet is marked for this socket, then this means data
 			// is available to be read on the socket
@@ -264,7 +266,7 @@ int main(int argc, char** argv)
 					NULL
 				);
 
-				//Steps to revieve a packet
+				//Steps to recieve a packet
 				//1. Get the header out of the buffer
 				//Packet size
 				int packetSize = client->buffer.ReadIntBE();
@@ -276,19 +278,24 @@ int main(int argc, char** argv)
 
 
 				cBuffer response(DEFAULT_BUFLEN);
+				short messageLength;
 
 				switch (commandtype)
 				{
+				case 1:
+				{
+					break;
+				}
 				case 2: //join
 				{
 					//2. Get the message out of the buffer
-					short messageLength = client->buffer.ReadShortBE();
+					messageLength = client->buffer.ReadShortBE();
 					roomName = client->buffer.ReadStringBE(messageLength);
 					rooms.insert(std::make_pair(roomName, i));
 
-					std::string responseMessage = "Joined room:" + roomName;
+					std::string responseMessage = "Joined room: " + roomName;
 
-					response.WriteShortBE(responseMessage.size());
+					response.WriteShortBE(responseMessage.length());
 					response.WriteStringBE(responseMessage);
 
 					response.AddHeader(commandtype);
@@ -297,7 +304,7 @@ int main(int argc, char** argv)
 				}
 				case 3: //leave
 				{
-					short messageLength = client->buffer.ReadShortBE();
+					messageLength = client->buffer.ReadShortBE();
 					roomName = client->buffer.ReadStringBE(messageLength);
 
 					for (roommapiterator it = rooms.begin(); it != rooms.end(); )
@@ -319,11 +326,12 @@ int main(int argc, char** argv)
 					break;
 				}
 				case 4: //message
-					short messageLength = client->buffer.ReadShortBE();
+					messageLength = client->buffer.ReadShortBE();
 					roomName = client->buffer.ReadStringBE(messageLength); 
 					messageLength = client->buffer.ReadShortBE();
 					received = client->buffer.ReadStringBE(messageLength);
 					
+					//TODO: get user name
 
 					response.WriteShortBE(roomName.size());
 					response.WriteStringBE(roomName);
@@ -385,7 +393,7 @@ int main(int argc, char** argv)
 						roommapiterator it;
 						switch (commandtype)
 						{
-						case 2:
+						case 2:	//Join
 							// RecvBytes > 0, we got data
 							iResult = WSASend(
 								ClientArray[i]->socket,
@@ -397,8 +405,7 @@ int main(int argc, char** argv)
 								NULL
 							);
 							break;
-						case 3:
-
+						case 3:	//Leave
 							// RecvBytes > 0, we got data
 							iResult = WSASend(
 								ClientArray[i]->socket,

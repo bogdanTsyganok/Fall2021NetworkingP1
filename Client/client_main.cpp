@@ -21,13 +21,21 @@
 //Commands that will be in the header of packets
 enum class Command
 {
-	Connect = 1,
+	Name = 1,
 	Join = 2,
 	Leave = 3,
 	Message = 4
 };
 
-void CreatePacket(cBuffer* buffer, Command type, std::string message);
+struct ClientInfo {
+	ClientInfo() {};
+	std::vector<std::string> roomList;
+	std::string clientName = "";
+};
+
+ClientInfo* gClient = new ClientInfo();
+
+void CreatePacket(cBuffer* buffer, Command type, std::vector< std::string> message);
 
 int main(int argc, char **argv)
 {
@@ -101,6 +109,11 @@ int main(int argc, char **argv)
 		WSACleanup();
 		return 1;
 	}
+
+	//Header
+	std::cout << "Welcome to the chat server!" << std::endl
+		<< "Type your command or /help for help" << std::endl;
+
 	bool acceptInput = true;
 	bool sendMsg = false;
 	std::string msg;
@@ -109,7 +122,6 @@ int main(int argc, char **argv)
 		if (_kbhit())
 		{
 			char key = _getch();
-
 
 			if (key == 27)
 			{
@@ -130,28 +142,74 @@ int main(int argc, char **argv)
 				msg += key;
 				std::cout << key;
 			}
-
 		}
 
 		if (sendMsg)
 		{
 			cBuffer* buffer = new cBuffer(DEFAULT_BUFLEN);
+			std::vector<std::string> messageVec;
+			//Check start of user input for the command
+			if (msg.rfind("/name", 0) == 0)
+			{
+				msg.erase(0, 6);
 
-			if (msg.find("/connect") != std::string::npos)
-			{
-				CreatePacket(buffer, Command::Connect, msg);
+				//Set locally
+				gClient->clientName = msg;
+				
+				//Send new name to server
+				messageVec.push_back(msg);
+				CreatePacket(buffer, Command::Name, messageVec);
+
+				messageVec.clear();
+				msg = "";
 			}
-			else if (msg.find("/join") != std::string::npos)
+			else if (msg.rfind("/join ", 0) == 0)
 			{
-				CreatePacket(buffer, Command::Join, msg);
+				msg.erase(0, 6);
+				messageVec.push_back(msg);
+				CreatePacket(buffer, Command::Join, messageVec);
+				messageVec.clear();
+				msg = "";
 			}
-			else if (msg.find("/leave") != std::string::npos)
+			else if (msg.rfind("/leave ", 0) == 0)
 			{
-				CreatePacket(buffer, Command::Leave, msg);
+				//Clear command from the string
+				msg.erase(0, 7);
+				messageVec.push_back(msg);
+				CreatePacket(buffer, Command::Leave, messageVec);
+				messageVec.clear();
+				msg = "";
 			}
-			else if (msg.find("/message") != std::string::npos)
+			else if (msg.rfind("/message ", 0) == 0)
 			{
-				CreatePacket(buffer, Command::Message, msg);
+				msg.erase(0, 9);
+
+				size_t roomIndex = msg.find('[');
+				size_t roomEnd = msg.find(']');
+				if (roomIndex != std::string::npos)
+				{
+					std::string roomName = msg.substr(roomIndex + 1, roomEnd -1);
+					msg.erase(roomIndex, roomEnd + 2);
+					messageVec.push_back(roomName);
+				}
+
+
+				messageVec.push_back(msg);
+				CreatePacket(buffer, Command::Message, messageVec);
+				messageVec.clear();
+				msg = "";
+			}
+			else if (msg.rfind("/help", 0) == 0)
+			{
+				std::cout << "Commands:" << std::endl;
+				std::cout << "/connect" << std::endl
+					<< "/join" << std::endl
+					<< "/leave" << std::endl
+					<< "/message" << std::endl
+					<< "/help" << std::endl;
+				msg = "";
+				sendMsg = false;
+				continue;
 			}
 			else
 			{
@@ -162,8 +220,6 @@ int main(int argc, char **argv)
 				sendMsg = false;
 				continue;
 			}
-
-
 
 			// Step #4 Send the message to the server
 			result = send(connectSocket, (char*)buffer->GetBuffer(), buffer->GetSize(), 0);
@@ -228,14 +284,17 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-void CreatePacket(cBuffer* buffer, Command type, std::string message)
+void CreatePacket(cBuffer* buffer, Command type, std::vector< std::string> message)
 {
-	//Steps to send a packet
-	//1. Determine length of message and put in the buffer
-	buffer->WriteShortBE(message.length());
+	for (std::string m : message)
+	{
+		//Steps to send a packet
+		//1. Determine length of message and put in the buffer
+		buffer->WriteShortBE(m.length());
 
-	//2. Put message in the buffer
-	buffer->WriteStringBE(message);
+		//2. Put message in the buffer
+		buffer->WriteStringBE(m);
+	}
 
 	//3. Add header to the packet
 	buffer->AddHeader((int)type);

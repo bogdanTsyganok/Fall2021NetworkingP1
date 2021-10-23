@@ -82,7 +82,7 @@ public:
 	int16_t ReadShortBE(std::size_t index);
 	int16_t ReadShortBE();
 
-	//Strings size = 8
+	//Char size = 8
 	void WriteStringBE(std::size_t index, std::string value);
 	void WriteStringBE(std::string value);
 
