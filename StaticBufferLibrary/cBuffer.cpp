@@ -178,7 +178,7 @@ std::string cBuffer::ReadStringBE(std::size_t index, int32_t stringSize)
 std::string cBuffer::ReadStringBE(int32_t stringSize)
 {
 	char value;
-	std::string outPut;
+	std::string outPut = "";
 	for (int i = 0; i < stringSize; i++)
 	{
 		value = mBuffer[mReadIndex++];

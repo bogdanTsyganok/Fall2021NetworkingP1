@@ -119,12 +119,17 @@ int main(int argc, char **argv)
 			{
 				sendMsg = true;
 			}
+			else if (key == '\b')
+			{
+				msg.erase(msg.end() - 1);
+				std::cout << "\b \b";
+			}
 			else
 			{
 				msg += key;
+				std::cout << key;
 			}
 
-			std::cout << key;
 		}
 
 		if (sendMsg)

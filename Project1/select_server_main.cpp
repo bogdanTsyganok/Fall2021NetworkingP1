@@ -193,7 +193,7 @@ int main(int argc, char** argv)
 
 		// Call our select function to find the sockets that
 		// require our attention
-		printf("Waiting for select()...\n");
+		//printf("Waiting for select()...\n");
 		total = select(0, &ReadSet, NULL, NULL, &tv);
 		if (total == SOCKET_ERROR)
 		{
@@ -202,7 +202,7 @@ int main(int argc, char** argv)
 		}
 		else
 		{
-			printf("select() is successful!\n");
+			//printf("select() is successful!\n");
 		}
 
 		// #4 Check for arriving connections on the listening socket
