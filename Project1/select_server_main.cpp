@@ -1,3 +1,14 @@
+/*
+* Author:		Jarrid Steeper 0883583, Bogdan Tsyganok 0886354
+* Class:		INFO6016 Network Programming
+* Teacher:		Lukas Gustafson
+* Project:		Project01
+* Due Date:		Oct 22
+* Filename:		select_server_main.cpp
+* Purpose:		Server for chat applications, can host rooms, maintain connections with and 
+				receive/send messages from multiple clients and act on those messages.
+*/
+
 #define WIN32_LEAN_AND_MEAN			// Strip rarely used calls
 
 #include <Windows.h>
@@ -284,6 +295,7 @@ int main(int argc, char** argv)
 				{
 				case 1:
 				{
+
 					break;
 				}
 				case 2: //join

@@ -1,3 +1,13 @@
+/*
+* Author:		Jarrid Steeper 0883583, Bogdan Tsyganok 0886354
+* Class:		INFO6016 Network Programming
+* Teacher:		Lukas Gustafson
+* Project:		Project01
+* Due Date:		Oct 22
+* Filename:		client_main.cpp
+* Purpose:		Client for chat applications, can connect to and send messages to a server.
+*/
+
 #define WIN32_LEAN_AND_MEAN
 
 #include <windows.h>
@@ -149,6 +159,7 @@ int main(int argc, char **argv)
 			cBuffer* buffer = new cBuffer(DEFAULT_BUFLEN);
 			std::vector<std::string> messageVec;
 			//Check start of user input for the command
+			//Set Name
 			if (msg.rfind("/name", 0) == 0)
 			{
 				msg.erase(0, 6);
@@ -163,6 +174,7 @@ int main(int argc, char **argv)
 				messageVec.clear();
 				msg = "";
 			}
+			//Join room
 			else if (msg.rfind("/join ", 0) == 0)
 			{
 				msg.erase(0, 6);
@@ -171,6 +183,7 @@ int main(int argc, char **argv)
 				messageVec.clear();
 				msg = "";
 			}
+			//Leave room
 			else if (msg.rfind("/leave ", 0) == 0)
 			{
 				//Clear command from the string
@@ -180,6 +193,7 @@ int main(int argc, char **argv)
 				messageVec.clear();
 				msg = "";
 			}
+			//Send message to a room
 			else if (msg.rfind("/message ", 0) == 0)
 			{
 				msg.erase(0, 9);
@@ -199,22 +213,38 @@ int main(int argc, char **argv)
 				messageVec.clear();
 				msg = "";
 			}
+			//Display help
 			else if (msg.rfind("/help", 0) == 0)
 			{
 				std::cout << "Commands:" << std::endl;
-				std::cout << "/connect" << std::endl
-					<< "/join" << std::endl
-					<< "/leave" << std::endl
-					<< "/message" << std::endl
-					<< "/help" << std::endl;
+				std::cout << "/name \"New Name\" :\t\t\tSet new display name (no quotation marks)" << std::endl
+					<< "/join \"Room Name\" :\t\t\tJoin a room or create it if the name isn't in use (no quotation marks)" << std::endl
+					<< "/leave \"Room Name\" :\t\t\tLeave a room (no quotation marks)" << std::endl
+					<< "/message [Room Name] \"Message\" :\tSend a message to a room (Square brackets around room name required, quotations are not)" << std::endl
+					<< "/help :\t\t\t\t\tRe-display this help text" << std::endl;
 				msg = "";
 				sendMsg = false;
 				continue;
 			}
+			//Display info
+			else if (msg.rfind("/info", 0) == 0)
+			{
+				std::cout << "Information:" << std::endl;
+				std::cout << "Username: " << gClient->clientName << std::endl;
+				std::cout << "Rooms: " << std::endl;
+				for (std::string room : gClient->roomList)
+				{
+					std::cout << room << std::endl;
+				}
+				msg = "";
+				sendMsg = false;
+				continue;
+			}
+			//Invalid input
 			else
 			{
 				std::cout << "Invalid input please use input:" << std::endl;
-				std::cout << "/connect" << std::endl << "/join" << std::endl
+				std::cout << "/name" << std::endl << "/join" << std::endl
 					<< "/leave" << std::endl << "/message" << std::endl;
 				msg = "";
 				sendMsg = false;
@@ -284,6 +314,12 @@ int main(int argc, char **argv)
 	return 0;
 }
 
+/// <summary>
+/// Takes type of commands and list of messages, creates a packet that will be fed into the buffer for serialization
+/// </summary>
+/// <param name="buffer"></param>
+/// <param name="type"></param>
+/// <param name="message"></param>
 void CreatePacket(cBuffer* buffer, Command type, std::vector< std::string> message)
 {
 	for (std::string m : message)
