@@ -124,7 +124,7 @@ int32_t cBuffer::ReadIntBE()
 	return value;
 }
 
-//Floats
+//Shorts
 void cBuffer::WriteShortBE(std::size_t index, int16_t value)
 {
 	int bufferSize = mBuffer.size();
