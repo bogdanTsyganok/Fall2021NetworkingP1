@@ -75,9 +75,10 @@ void cBuffer::Flush()
 //Ints
 void cBuffer::WriteIntBE(std::size_t index, int32_t value)
 {
-	if (mWriteIndex >= mBuffer.size() - 4)
+	int bufferSize = mBuffer.size();
+	if (mWriteIndex >= bufferSize - 4)
 	{
-		mBuffer.resize(mBuffer.size() + 4);
+		mBuffer.resize(bufferSize + 4);
 	}
 
 	mBuffer[index] = value >> 24;
@@ -89,6 +90,12 @@ void cBuffer::WriteIntBE(std::size_t index, int32_t value)
 
 void cBuffer::WriteIntBE(int32_t value)
 {
+	int bufferSize = mBuffer.size();
+	if (mWriteIndex >= bufferSize - 4)
+	{
+		mBuffer.resize(bufferSize + 4);
+	}
+
 	mBuffer[mWriteIndex] = value >> 24;
 	mBuffer[mWriteIndex + 1] = value >> 16;
 	mBuffer[mWriteIndex + 2] = value >> 8;
@@ -120,6 +127,12 @@ int32_t cBuffer::ReadIntBE()
 //Floats
 void cBuffer::WriteShortBE(std::size_t index, int16_t value)
 {
+	int bufferSize = mBuffer.size();
+	if (mWriteIndex >= bufferSize - 2)
+	{
+		mBuffer.resize(bufferSize + 2);
+	}
+
 	mBuffer[index] = value >> 8;
 	mBuffer[index + 1] = value;
 	mWriteIndex += 2;
@@ -127,6 +140,12 @@ void cBuffer::WriteShortBE(std::size_t index, int16_t value)
 
 void cBuffer::WriteShortBE(int16_t value)
 {
+	int bufferSize = mBuffer.size();
+	if (mWriteIndex >= bufferSize - 2)
+	{
+		mBuffer.resize(bufferSize + 2);
+	}
+
 	mBuffer[mWriteIndex] = value >> 8;
 	mBuffer[mWriteIndex + 1] = value;
 	mWriteIndex += 2;
@@ -152,6 +171,13 @@ int16_t cBuffer::ReadShortBE()
 //Strings
 void cBuffer::WriteStringBE(std::size_t index, std::string value)
 {
+	int bufferSize = mBuffer.size();
+	int valueSize = value.size();
+	if (mWriteIndex >= bufferSize - valueSize)
+	{
+		mBuffer.resize(bufferSize + valueSize);
+	}
+
 	for (char c : value)
 	{
 		mBuffer[index++] = c;
@@ -161,6 +187,13 @@ void cBuffer::WriteStringBE(std::size_t index, std::string value)
 
 void cBuffer::WriteStringBE(std::string value)
 {
+	int bufferSize = mBuffer.size();
+	int valueSize = value.size();
+	if (mWriteIndex >= bufferSize - valueSize)
+	{
+		mBuffer.resize(bufferSize + valueSize);
+	}
+
 	for (char c : value)
 	{
 		mBuffer[mWriteIndex++] = c;
