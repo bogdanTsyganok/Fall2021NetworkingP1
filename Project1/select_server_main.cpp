@@ -420,6 +420,7 @@ int main(int argc, char** argv)
 
 						case 2:	//Join
 						{
+							it = rooms.find(roomName);
 							// RecvBytes > 0, we got data
 
 							while (it != rooms.end())
@@ -442,6 +443,7 @@ int main(int argc, char** argv)
 						}
 						case 3:	//Leave
 						{
+							it = rooms.find(roomName);
 							// RecvBytes > 0, we got data
 
 							while (it != rooms.end())
