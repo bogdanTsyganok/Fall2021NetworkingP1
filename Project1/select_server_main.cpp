@@ -419,30 +419,49 @@ int main(int argc, char** argv)
 							break;
 
 						case 2:	//Join
+						{
 							// RecvBytes > 0, we got data
-							iResult = WSASend(
-								ClientArray[i]->socket,
-								&(resBuf),
-								1,
-								&SentBytes,
-								Flags,
-								NULL,
-								NULL
-							);
+
+							while (it != rooms.end())
+							{
+								if (it->first != roomName)
+									break;
+									// RecvBytes > 0, we got data
+									iResult = WSASend(
+										ClientArray[it->second]->socket,
+										&(resBuf),
+										1,
+										&SentBytes,
+										Flags,
+										NULL,
+										NULL
+									);
+								it++;
+							}
 							break;
+						}
 						case 3:	//Leave
+						{
 							// RecvBytes > 0, we got data
-							iResult = WSASend(
-								ClientArray[i]->socket,
-								&(resBuf),
-								1,
-								&SentBytes,
-								Flags,
-								NULL,
-								NULL
-							);
+
+							while (it != rooms.end())
+							{
+								if (it->first != roomName)
+									break;
+								// RecvBytes > 0, we got data
+								iResult = WSASend(
+									ClientArray[it->second]->socket,
+									&(resBuf),
+									1,
+									&SentBytes,
+									Flags,
+									NULL,
+									NULL
+								);
+								it++;
+							}
 							break;
-							break;
+						}
 						case 4: //send message
 
 							it = rooms.find(roomName);
