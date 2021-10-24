@@ -24,7 +24,7 @@
 #pragma comment (lib, "Mswsock.lib")
 #pragma comment (lib, "AdvApi32.lib")
 
-#define DEFAULT_BUFLEN 8						// Default buffer length of our buffer in characters
+#define DEFAULT_BUFLEN 10						// Default buffer length of our buffer in characters
 #define DEFAULT_PORT "27015"					// The default port to use
 #define SERVER "127.0.0.1"						// The IP of our server
 
@@ -283,10 +283,18 @@ int main(int argc, char **argv)
 		if (result > 0)
 		{
 			//1. Get the header out of the buffer
-				//Packet size
+			//Packet size
 			int packetSize = recvbuf.ReadIntBE();
+
 			//Command type
 			int commandtype = recvbuf.ReadIntBE();
+
+			recvbuf.ResetSize(packetSize);
+
+			if (packetSize > recvbuflen)
+			{
+				recv(connectSocket, (char*)recvbuf.GetBuffer() + recvbuflen, packetSize - recvbuflen, 0);
+			}
 
 			//2. Get the message out of the buffer
 			switch (commandtype)

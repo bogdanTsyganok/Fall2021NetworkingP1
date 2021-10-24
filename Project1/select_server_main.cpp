@@ -286,6 +286,25 @@ int main(int argc, char** argv)
 				//Command type
 				int commandtype = client->buffer.ReadIntBE();
 
+				if (packetSize > RecvBytes)
+				{
+					client->buffer.ResetSize(packetSize);
+					client->dataBuf.len = packetSize;
+					client->dataBuf.buf = (char*)client->buffer.GetBuffer() + RecvBytes;
+
+
+					DWORD Flags = 0;
+					iResult = WSARecv(
+						client->socket,
+						&(client->dataBuf),
+						1,
+						&RecvBytes,
+						&Flags,
+						NULL,
+						NULL
+					);
+				}
+
 				std::string received;
 				std::string roomName;
 
