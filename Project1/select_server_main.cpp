@@ -308,7 +308,7 @@ int main(int argc, char** argv)
 					roomName = client->buffer.ReadStringBE(messageLength);
 					rooms.insert(std::make_pair(roomName, i));
 
-					std::string responseMessage = "Joined room: " + roomName;
+					std::string responseMessage = client->name + " has joined the room: " + roomName;
 
 					response.ResetSize(responseMessage.length() + DEFAULT_HEADERLEN);
 					response.WriteShortBE(responseMessage.length());
@@ -332,7 +332,7 @@ int main(int argc, char** argv)
 						}
 					}
 
-					std::string responseMessage = "Left room:" + roomName;
+					std::string responseMessage = client->name + " has left room:" + roomName;
 
 					response.WriteShortBE(responseMessage.size());
 					response.WriteStringBE(responseMessage);
