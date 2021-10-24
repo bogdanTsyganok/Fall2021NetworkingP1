@@ -75,6 +75,11 @@ void cBuffer::Flush()
 //Ints
 void cBuffer::WriteIntBE(std::size_t index, int32_t value)
 {
+	if (mWriteIndex >= mBuffer.size() - 4)
+	{
+		mBuffer.resize(mBuffer.size() + 4);
+	}
+
 	mBuffer[index] = value >> 24;
 	mBuffer[index + 1] = value >> 16;
 	mBuffer[index + 2] = value >> 8;

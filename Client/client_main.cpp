@@ -141,6 +141,7 @@ int main(int argc, char **argv)
 			if (key == '\r')
 			{
 				sendMsg = true;
+				std::cout << std::endl;
 			}
 			else if (key == '\b' && !msg.empty())
 			{
@@ -179,6 +180,7 @@ int main(int argc, char **argv)
 			{
 				msg.erase(0, 6);
 				messageVec.push_back(msg);
+				gClient->roomList.push_back(msg);
 				CreatePacket(buffer, Command::Join, messageVec);
 				messageVec.clear();
 				msg.clear();
@@ -189,6 +191,18 @@ int main(int argc, char **argv)
 				//Clear command from the string
 				msg.erase(0, 7);
 				messageVec.push_back(msg);
+				
+				std::string roomName;
+				for (int i = 0; i < gClient->roomList.size(); i++)
+				{
+					roomName = gClient->roomList.at(i);
+					if (roomName == msg)
+					{
+						gClient->roomList.erase(gClient->roomList.begin() + i);
+
+					}
+				}
+
 				CreatePacket(buffer, Command::Leave, messageVec);
 				messageVec.clear();
 				msg.clear();
@@ -260,7 +274,6 @@ int main(int argc, char **argv)
 				WSACleanup();
 				return 1;
 			}
-			printf("Bytes Sent: %ld\n", result);
 			sendMsg = false;
 		}
 		recvbuf.Flush();
@@ -276,13 +289,57 @@ int main(int argc, char **argv)
 			int commandtype = recvbuf.ReadIntBE();
 
 			//2. Get the message out of the buffer
-			short messageLength = recvbuf.ReadShortBE();
+			switch (commandtype)
+			{
+			//Set name
+			case 1:
+			{
+				break;
+			}
+			//Join
+			case 2:
+			{
+				//Join room message
+				short messageLength;
+				messageLength = recvbuf.ReadShortBE();
+				std::string message = recvbuf.ReadStringBE(messageLength);
+				std::cout << message << std::endl;
+				break;
+			}
+			//Leave
+			case 3:
+			{
+				//Leave room message
+				short messageLength;
+				messageLength = recvbuf.ReadShortBE();
+				std::string message = recvbuf.ReadStringBE(messageLength);
+				std::cout << message << std::endl;
+				break;
+			}
+			//Message
+			case 4:
+			{
+				short messageLength;
+				//Sender name
+				messageLength = recvbuf.ReadShortBE();
+				std::string senderName = recvbuf.ReadStringBE(messageLength);
 
-			std::string received = recvbuf.ReadStringBE(messageLength);
+				//Room name
+				messageLength = recvbuf.ReadShortBE();
+				std::string roomName = recvbuf.ReadStringBE(messageLength);
 
+				//Message
+				messageLength = recvbuf.ReadShortBE();
+				std::string message = recvbuf.ReadStringBE(messageLength);
 
-			printf("Bytes received: %d\n", result);
-			printf("Message: %s\n", received.c_str());
+				std::cout << "[" << roomName << "] " << senderName << ": " << message << std::endl;
+
+				break;
+			}
+			default:
+				break;
+			}
+		
 		}
 		else if (result == 0)
 		{

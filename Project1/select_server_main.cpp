@@ -304,12 +304,13 @@ int main(int argc, char** argv)
 				}
 				case 2: //join
 				{
+					//Room name
 					messageLength = client->buffer.ReadShortBE();
 					roomName = client->buffer.ReadStringBE(messageLength);
 					rooms.insert(std::make_pair(roomName, i));
 
+					//Message
 					std::string responseMessage = "Joined room: " + roomName;
-
 					response.ResetSize(responseMessage.length() + DEFAULT_HEADERLEN);
 					response.WriteShortBE(responseMessage.length());
 					response.WriteStringBE(responseMessage);
@@ -348,16 +349,19 @@ int main(int argc, char** argv)
 					messageLength = client->buffer.ReadShortBE();
 					received = client->buffer.ReadStringBE(messageLength);
 
-
+					//Sender name
 					response.WriteShortBE(client->name.size());
 					response.WriteStringBE(client->name);
 
+					//Room name
 					response.WriteShortBE(roomName.size());
 					response.WriteStringBE(roomName);
 
+					//Message
 					response.WriteShortBE(received.size());
 					response.WriteStringBE(received);
 
+					//Header
 					response.AddHeader(commandtype);
 
 					break;
