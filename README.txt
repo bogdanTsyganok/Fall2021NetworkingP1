@@ -2,7 +2,7 @@ Networking Project 1
 
 Github link: https://github.com/bogdanTsyganok/Fall2021NetworkingP1.git
 
-Video link:
+Video link: https://www.youtube.com/watch?v=4X3wtWo6pA8
 
 
 Build Instructions if not working from git:
